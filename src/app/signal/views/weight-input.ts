@@ -14,7 +14,6 @@ import {Weight} from '../models/manifest.models';
       <input
         type="number"
         [field]="form.val"
-        (input)="setValue()"
 
         class="block w-full min-w-0 flex-1 rounded-none rounded-l-md border-gray-300 py-2 px-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:z-10 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 disabled:bg-gray-100 disabled:text-gray-500"
         placeholder="0.00"
@@ -35,37 +34,40 @@ export class NewWeightInputComponent implements FormValueControl<number> {
 
   weight = signal<Weight>({
     unit: 'kg',
-    val: this.value()
+    val: 0
   })
+
+  lbsRatio = 0.453592
 
   constructor() {
     effect(() => {
+      const weight = this.weight();
+      untracked(() => {
+        this.value.set(weight.unit === 'kg' ? weight.val : weight.val * this.lbsRatio);
+      })
+    })
 
+    effect(() => {
       const parentKg = this.value();
       const currentUnit = this.weight().unit;
+      const currentVal = this.weight().val;
 
       const expectedDisplayVal = currentUnit === 'kg'
         ? parentKg
-        : parentKg / 0.453592;
+        : parentKg / this.lbsRatio;
 
       untracked(() => {
-        const currentVal = this.weight().val;
-
         if (Math.abs(currentVal - expectedDisplayVal) > 0.001) {
           this.weight.update(w => ({...w, val: expectedDisplayVal}));
         }
       });
     });
+
+
   }
 
 
   form = form(this.weight)
 
-  setValue() {
-    this.value.set(
-      this.weight().unit === 'kg' ? this.weight().val : this.weight().val * 0.453592
-    )
 
-    console.log(this.value())
-  }
 }

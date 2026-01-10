@@ -12,18 +12,18 @@ export interface CustomsData {
 }
 
 export interface MetaData {
-  transportMode: TransportMode | null;
-  customs: CustomsData | null;
+  transportMode: TransportMode ;
+  customs: CustomsData;
 }
 
 export interface CargoItem {
   description: string;
   isHazardous: boolean;
-  hazardClass: HazardClass | null;
+  hazardClass: HazardClass;
   weight: number;
 }
 
 export interface ManifestPayload {
-  meta: MetaData | null ;
-  cargoItems: CargoItem[] | null;
+  meta: MetaData ;
+  cargoItems: CargoItem[] ;
 }
