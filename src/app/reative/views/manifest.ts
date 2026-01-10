@@ -1,5 +1,13 @@
-import {Component, OnInit, OnDestroy, inject, signal} from '@angular/core';
-import {FormBuilder, Validators, FormArray, ReactiveFormsModule, FormGroup, FormControl} from '@angular/forms';
+import {Component, OnInit, OnDestroy, inject, signal, ChangeDetectionStrategy} from '@angular/core';
+import {
+  FormBuilder,
+  Validators,
+  FormArray,
+  ReactiveFormsModule,
+  FormGroup,
+  FormControl,
+  FormControlStatus
+} from '@angular/forms';
 import { Subject, takeUntil, timer } from 'rxjs';
 import { CommonModule } from '@angular/common';
 
@@ -43,20 +51,20 @@ import {CargoItemForm, ManifestForm, ManifestPayload, TransportMode} from '../mo
 
         <div class="mb-6 flex justify-end">
           <span class="inline-flex items-center gap-x-1.5 rounded-full px-3 py-1 text-xs font-medium ring-1 ring-inset"
-                [class.bg-green-50]="formStatus === 'VALID'"
-                [class.text-green-700]="formStatus === 'VALID'"
-                [class.ring-green-600]="formStatus === 'VALID'"
-                [class.bg-red-50]="formStatus === 'INVALID'"
-                [class.text-red-700]="formStatus === 'INVALID'"
-                [class.ring-red-600]="formStatus === 'INVALID'"
-                [class.bg-amber-50]="formStatus === 'PENDING'"
-                [class.text-amber-700]="formStatus === 'PENDING'"
-                [class.ring-amber-600]="formStatus === 'PENDING'">
+                [class.bg-green-50]="formStatus() === 'VALID'"
+                [class.text-green-700]="formStatus() === 'VALID'"
+                [class.ring-green-600]="formStatus() === 'VALID'"
+                [class.bg-red-50]="formStatus() === 'INVALID'"
+                [class.text-red-700]="formStatus() === 'INVALID'"
+                [class.ring-red-600]="formStatus() === 'INVALID'"
+                [class.bg-amber-50]="formStatus() === 'PENDING'"
+                [class.text-amber-700]="formStatus() === 'PENDING'"
+                [class.ring-amber-600]="formStatus() === 'PENDING'">
             <svg class="h-1.5 w-1.5 fill-current" viewBox="0 0 6 6" aria-hidden="true">
               <circle cx="3" cy="3" r="3" />
             </svg>
-            Status: {{ formStatus }}
-            @if (formStatus === 'PENDING') { <span class="animate-pulse ml-1">...</span> }
+            Status: {{ formStatus() }}
+            @if (formStatus() === 'PENDING') { <span class="animate-pulse ml-1">...</span> }
           </span>
         </div>
 
@@ -173,7 +181,8 @@ import {CargoItemForm, ManifestForm, ManifestPayload, TransportMode} from '../mo
   styles: [`
     @keyframes slideIn { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
     .animate-slideIn { animation: slideIn 0.3s ease-out forwards; }
-  `]
+  `],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ManifestComponent implements OnInit, OnDestroy {
   private fb = inject(FormBuilder);
@@ -186,7 +195,7 @@ export class ManifestComponent implements OnInit, OnDestroy {
   currentStep = signal(1);
   isAirFreight = signal(false);
   payload = signal<ManifestPayload | null>(null)
-  formStatus = 'VALID';
+  formStatus = signal<FormControlStatus>('PENDING');
 
   form: FormGroup<ManifestForm> = this.fb.group({
     meta: this.fb.group({
@@ -201,7 +210,7 @@ export class ManifestComponent implements OnInit, OnDestroy {
   get cargoItems(): FormArray<FormGroup<CargoItemForm>> { return this.form.get('cargoItems') as FormArray; }
 
   ngOnInit() {
-    this.form.statusChanges.pipe(takeUntil(this.destroy$)).subscribe(s => this.formStatus = s);
+    this.form.statusChanges.pipe(takeUntil(this.destroy$)).subscribe(s => this.formStatus.set(s));
     this.form.get('meta.transportMode')?.valueChanges.pipe(takeUntil(this.destroy$)).subscribe(mode => {
       this.isAirFreight.set(mode === 'air');
       this.updateWeightValidators(this.isAirFreight());
