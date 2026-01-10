@@ -1,4 +1,4 @@
-import {Component, model, signal} from '@angular/core';
+import {Component, effect, model, signal, untracked} from '@angular/core';
 import {Field, form, FormValueControl} from '@angular/forms/signals';
 import {Weight} from '../models/manifest.models';
 
@@ -21,7 +21,6 @@ import {Weight} from '../models/manifest.models';
       >
       <select
         [field]="form.unit"
-        (change)="setValue()"
         class="relative inline-flex items-center rounded-r-md border border-l-0 border-gray-300 bg-gray-50 px-3 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-100 focus:z-10 focus:ring-2 focus:ring-blue-600 focus:outline-none disabled:bg-gray-100 disabled:text-gray-500"
       >
         <option value="kg">KG</option>
@@ -38,6 +37,27 @@ export class NewWeightInputComponent implements FormValueControl<number> {
     unit: 'kg',
     val: this.value()
   })
+
+  constructor() {
+    effect(() => {
+
+      const parentKg = this.value();
+      const currentUnit = this.weight().unit;
+
+      const expectedDisplayVal = currentUnit === 'kg'
+        ? parentKg
+        : parentKg / 0.453592;
+
+      untracked(() => {
+        const currentVal = this.weight().val;
+
+        if (Math.abs(currentVal - expectedDisplayVal) > 0.001) {
+          this.weight.update(w => ({...w, val: expectedDisplayVal}));
+        }
+      });
+    });
+  }
+
 
   form = form(this.weight)
 
