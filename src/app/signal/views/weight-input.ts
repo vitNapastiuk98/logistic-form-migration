@@ -36,7 +36,7 @@ export class NewWeightInputComponent implements FormValueControl<number> {
 
   weight = signal<Weight>({
     unit: 'kg',
-    val: 0
+    val: this.value()
   })
 
   form = form(this.weight)
