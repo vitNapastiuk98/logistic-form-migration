@@ -1,5 +1,4 @@
 import {Component, model, signal} from '@angular/core';
-import {ReactiveFormsModule} from '@angular/forms';
 import {Field, form, FormValueControl} from '@angular/forms/signals';
 import {Weight} from '../models/manifest.models';
 
@@ -8,7 +7,6 @@ import {Weight} from '../models/manifest.models';
   standalone: true,
   imports: [
     Field,
-    ReactiveFormsModule
   ],
   providers: [],
   template: `
