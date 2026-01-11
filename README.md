@@ -1,59 +1,155 @@
-# Untitled
+# Logistics Form migration
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.0.5.
+**Logistics Form migration** is an Angular playground project focused on experimenting with **Angular 21 Signal Forms** by migrating a form from **Reactive Forms** to the new signal-based API.
 
-## Development server
+The goal of this project is to explore how Signal Forms handle:
 
-To start a local development server, run:
+* Nested objects
+* Dynamic arrays
+* Async validators
+* Conditional fields
+* Conditional validation requirements
 
-```bash
-ng serve
+It serves as a practical comparison between legacy Reactive Forms and modern Signal Forms, highlighting differences in state management, validation, and custom controls.
+
+---
+
+## Project Purpose
+
+This project hands-on experiment designed to understand how Signal Forms behave when dealing with non-trivial form scenarios commonly found in enterprise applications.
+
+---
+
+## Key Features
+
+### 1. Form Logic
+
+* **Deep Nesting**
+  Manages nested data structures such as:
+
+  ```
+  Transport → Customs → Clearance Code
+  ```
+
+  using strictly typed form models.
+
+* **Dynamic Arrays**
+  A Cargo Inventory section where items can be added or removed dynamically.
+
+* **Conditional Validation**
+
+  * **Runtime Swapping**:
+    Changing the Transport Mode (Air / Sea) dynamically updates the maximum weight validator for all cargo items.
+  * **Cross-Field Dependency**:
+    The *Hazard Class* field becomes required only when *Is Hazardous* is checked.
+
+---
+
+### 2. Architecture Comparison
+
+| Feature          | Reactive Forms                               | Signal Forms                                                  |
+| ---------------- | -------------------------------------------- |---------------------------------------------------------------|
+| State Management | `FormGroup`, `FormControl`, `FormArray`      | `form()`, `model()`, `signal()` `linkedSignal()`              |
+| Data Flow        | RxJS (`valueChanges`)                        | Native Signals (`computed`, `effect`) and `schema` definition |
+| Custom Controls  | `ControlValueAccessor`                       | `FormValueControl`                                            |
+| Boilerplate      | High (providers, `forwardRef`, `writeValue`) | Minimal (direct model binding)                                |
+
+---
+
+### 3. Custom Controls
+
+* **Reactive Weight Input**
+
+  * Implements `ControlValueAccessor`
+  * Handles internal unit conversion (kg / lbs)
+  * Exposes a normalized value to the parent form
+
+* **Signal Weight Input**
+
+  * Uses the `FormValueControl` interface
+  * Relies on `model()` for two-way binding
+  * No CVA providers or manual syncing required
+
+---
+
+### 4. UI / UX
+
+* **Wizard Pattern**
+  Multi-step flow separating Transport details and Cargo inventory
+
+* **Async Validation**
+  Simulates API latency for validating Customs Clearance codes, including:
+
+  * Pending state handling
+  * Error feedback
+
+* **Interactive Feedback**
+
+  * Toast notifications
+  * Read-only confirmation modal for final review
+
+* **Styling**
+
+  * Tailwind CSS
+
+---
+
+## Tech Stack
+
+* **Framework:** Angular 21 (Experimental Signal Forms)
+* **Language:** TypeScript 5.x
+* **Styling:** Tailwind CSS
+* **State Management:** Angular Signals
+
+---
+
+## Project Structure
+
+The project is intentionally split to show **before** and **after** implementations.
+
+```
+src/app/
+├── reactive/
+│   ├── views/
+│   │   ├── manifest.ts
+│   │   └── weight-input.ts
+│   ├── models/
+│   │   └── form and domain interfaces
+│   └── services/
+│       └── mock async validation services
+│
+└── signal/
+    └── implementation using Signal Forms API
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+---
 
-## Code scaffolding
+## Getting Started
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
-
-```bash
-ng generate component component-name
-```
-
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+### Install Dependencies
 
 ```bash
-ng generate --help
+npm install
 ```
 
-## Building
-
-To build the project run:
+### Start Development Server
 
 ```bash
-ng build
+npm start
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+### View the Application
 
-## Running unit tests
+Open your browser and navigate to:
 
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
-
-```bash
-ng test
+```
+http://localhost:4200
 ```
 
-## Running end-to-end tests
+---
 
-For end-to-end (e2e) testing, run:
 
-```bash
-ng e2e
-```
+## Notes
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+This repository is meant for experimentation, learning, and discussion around Signal Forms.
+Expect iteration, refactoring, and exploration rather than polished abstractions.
